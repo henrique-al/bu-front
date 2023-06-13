@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realidade aumentada</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-aframe.prod.js"></script>
+</head>
+</head>
+
+<body>
+  <div id="container">
+
+  </div>
+  <a-scene mindar-image="imageTargetSrc: ./targets.mind" color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0" id="task01"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 1" id="task02"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 2" id="task03"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 3" id="task04"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 4" id="task05"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 5" id="task06"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 6" id="task07"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 7" id="task08"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 8" id="task09"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 9" id="task10"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 10" id="task11"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 11" id="task12"></a-entity>
+    <a-entity mindar-image-target="targetIndex: 12" id="task13"></a-entity>
+  </a-scene>
+  <script src="../index.js"></script>
+  <script src="./components/modalAliem.js"></script>
+  <script src="./components/modalSoldado.js"></script>
+  <script src="./components/modalGeneral.js"></script>
+  <script src="./components/modalReuniao.js"></script>
+  <script src="./components/modalGameOver.ts"></script>
+
+  <script>
+    const socket = new WebSocket("ws://localhost:3001");
+    let timeBlock = 20;
+    let typePlayer = localStorage.getItem("typePlayer");
+
+    socket.onopen = () => {
+      if (localStorage.getItem("typePlayer") !== null) {
+        socket.send("TIPAGEM");
+      }
+    };
+
+    const modalHackerTeste = (time) => {
+      let currentTime = time / 10000;
+      const modal = document.createElement('div');
+      modal.setAttribute('class', 'modal');
+      modal.setAttribute('role', 'dialog');
+
+      const modalDialog = document.createElement('div');
+      modalDialog.setAttribute('class', 'modal-dialog-hacker');
+      modalDialog.setAttribute('role', 'document');
+
+      const modalContent = document.createElement('div');
+      modalContent.setAttribute('class', 'modal-content-hacker');
+
+      const modalHeader = document.createElement('div');
+      modalHeader.setAttribute('class', 'modal-header-hacker');
+
+      const modalTitle = document.createElement('div');
+      modalTitle.setAttribute('class', 'modal-title-hacker');
+
+      const h1Emoji1 = document.createElement('h1');
+      h1Emoji1.textContent = '👾';
+      modalTitle.appendChild(h1Emoji1);
+
+      const h1Text = document.createElement('h1');
+      h1Text.setAttribute('class', 'text-hacker');
+      h1Text.textContent = 'Você foi hackeado';
+      modalTitle.appendChild(h1Text);
+
+      const h1Emoji2 = document.createElement('h1');
+      h1Emoji2.textContent = '👾';
+      modalTitle.appendChild(h1Emoji2);
+
+      modalHeader.appendChild(modalTitle);
+      modalContent.appendChild(modalHeader);
+
+      const modalBody = document.createElement('div');
+      modalBody.setAttribute('class', 'modal-body-hacker');
+
+      const h4 = document.createElement('h4');
+      h4.textContent = 'não pode realizar tarefas pelos próximos: ';
+      modalBody.appendChild(h3);
+      const h1 = document.createElement('h1');
+      h1.textContent = currentTime < 1 ? `${currentTime} segundos` : `${currentTime} segundo`;
+      modalBody.appendChild(h1);
+      const intervalId = setInterval(() => {
+        if (currentTime > 0) {
+          currentTime--;
+        } else {
+          clearInterval(intervalId);
+          const button = document.createElement('button');
+          button.textContent = 'Fechar';
+          button.setAttribute("class", "button-hacker")
+          button.addEventListener('click', () => modal.style.display = "none");
+          modalBody.appendChild(button);
+        }
+      }, 1000);
+
+      modalContent.appendChild(modalBody);
+      modalDialog.appendChild(modalContent);
+      modal.appendChild(modalDialog);
+
+      document.getElementById("container").appendChild(modal);
+    }
+
+    socket.onmessage = (event) => {
+      if (event.data.includes("TIME")) {
+        modalGameOver()
+      }
+      if (event.data.includes("BLOCK")) {
+        if (event.data.includes("AUUL")) {
+          modalHackerTeste(20000)
+        } else {
+          modalHackerTeste(40000)
+        }
+      }
+      if (event.data.includes("REUNIÃO")) {
+        modalReuniao()
+        setTimeout(() => {
+          document.querySelector("#reuniao").remove()
+        }, 180000)
+      }
+      if (
+        event.data.includes("GENERAL") ||
+        event.data.includes("ALIEN") ||
+        event.data.includes("SOLDADO")
+      ) {
+        if (event.data.includes("ALIEN")) {
+          localStorage.setItem("typePlayer", "ALIEN");
+          typePlayer = "ALIEN";
+          const alien = JSON.parse(event.data)
+          console.log(alien)
+          modalAlien(socket, alien.raca)
+        } else if (event.data.includes("GENERAL")) {
+          localStorage.setItem("typePlayer", event.data);
+          typePlayer = event.data;
+          modalGeneral()
+        } else {
+          localStorage.setItem("typePlayer", event.data);
+          typePlayer = event.data;
+          modalSoldado()
+        }
+      }
+    };
+
+  </script>
+</body>
+
+</html>
