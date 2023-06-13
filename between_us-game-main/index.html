@@ -45,7 +45,7 @@
   <script src="./components/modalGameOver.ts"></script>
 
   <script>
-    const socket = new WebSocket("ws://localhost:3001");
+    const socket = new WebSocket("wss://buback-production.up.railway.app");
     let timeBlock = 20;
     let typePlayer = localStorage.getItem("typePlayer");
 
